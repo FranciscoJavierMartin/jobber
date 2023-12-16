@@ -23,11 +23,23 @@ services:
     command: --default-authentication-plugin=mysql_native_password
     restart: always
     environment:
-      - MYSQL_USER=jobber # Just for development
       - MYSQL_DATABASE=jobber_auth # Just for development
+      - MYSQL_USER=jobber # Just for development
       - MYSQL_ROOT_PASSWORD=api # Just for development
       - MYSQL_PASSWORD=api # Just for development
     ports:
       - '3306:3306'
     volumes:
       - ./docker-volumes/mysql:/var/lib/mysql
+  postgres:
+    container_name: postgres_container
+    image: postgres:16.1
+    restart: always
+    environment:
+      - POSTGRES_DB=jobber_reviews # Just for development
+      - POSTGRES_USER=jobber # Just for development
+      - POSTGRES_PASSWORD=api # Just for development
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./docker-volumes/postgres:/var/lib/postgres
