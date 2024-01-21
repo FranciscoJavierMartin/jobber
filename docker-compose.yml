@@ -77,7 +77,6 @@ services:
       - ./docker-volumes/elasticsearch-data:/usr/share/elasticsearch/data
     networks:
       - elastic
-
   kibana:
     container_name: kibana_container
     image: docker.elastic.co/kibana/kibana:8.11.3
@@ -92,7 +91,21 @@ services:
       - ./kibana.yml/:/usr/share/kibana/config/kibana.yml:ro
     depends_on:
       - elasticsearch
+  notifications:
+    container_name: notification_container
+    build:
+      context: ./server/jobber-notification
+      dockerfile: Dockerfile.dev
+    restart: always
+    ports:
+      - 4001:4001
+    env_file:
+      - ./server/jobber-notification/.env
+    environment:
 
+    depends_on:
+      - rabbitmq
+      - elasticsearch
 networks:
   elastic:
     name: elastic
