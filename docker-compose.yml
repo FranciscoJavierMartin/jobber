@@ -58,6 +58,8 @@ services:
       - '5672:5672'
       # Management UI
       - '15672:15672'
+    networks:
+      - elastic
   elasticsearch:
     container_name: elasticsearch_container
     image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
@@ -90,7 +92,7 @@ services:
       - ELASTICSEARCH_HOSTS=["http://elasticsearch_container:9200"]
       - ELASTICSEARCH_USERNAME=kibana_system
       - ELASTICSEARCH_PASSWORD=kibana
-      - ELASTICSEARCH_SERVICEACCOUNT_TOKEN=AAEAAWVsYXN0aWMva2liYW5hL2pvYmJlci1raWJhbmE6YWxDUFFiNnBTM0c4Smt3cGR2WFN0Zw
+      - ELASTICSEARCH_SERVICEACCOUNT_TOKEN=AAEAAWVsYXN0aWMva2liYW5hL2pvYmJlci1raWJhbmE6aXhBTE00M2JTd2VKZEpFMGRPVkRLdw
       - XPACK_FLEET_AGENTS_ELASTICSEARCH_HOSTS=["http://elasticsearch_container:9200"]
     ports:
       - 5601:5601
@@ -121,12 +123,14 @@ services:
       - RABBITMQ_ENDPOINT=amqp://myuser:mypassword@rabbitmq_container:5672
       - SENDER_EMAIL=wilhelmine32@ethereal.email
       - SENDER_EMAIL_PASSWORD=CUareRxHnBwJzuhjJJ
-      - ELASTIC_SEARCH_URL=http://elastic:admin1234@localhost:9200
+      - ELASTIC_SEARCH_URL=http://elastic:admin1234@elasticsearch_container:9200
       - ELASTIC_APM_SERVER_URL=http://localhost:8200
       - ELASTIC_APM_SECRET_TOKEN=
     depends_on:
       - elasticsearch
       - rabbitmq
+    networks:
+      - elastic
 networks:
   elastic:
     name: elastic
