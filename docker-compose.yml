@@ -109,7 +109,6 @@ services:
       dockerfile: Dockerfile.dev
       args:
         - NPM_TOKEN=${NPM_TOKEN}
-      #   - SERVER_PORT=${SERVER_PORT}
     restart: always
     ports:
       - 4001:4001
@@ -117,15 +116,17 @@ services:
       - ./server/jobber-notification/.env
     # Check what is used
     environment:
-      - ENABLE_APM=0
-      - NODE_ENV=development
-      - CLIENT_URL=http://localhost:3000
-      - RABBITMQ_ENDPOINT=amqp://myuser:mypassword@rabbitmq_container:5672
-      - SENDER_EMAIL=wilhelmine32@ethereal.email
-      - SENDER_EMAIL_PASSWORD=CUareRxHnBwJzuhjJJ
-      - ELASTIC_SEARCH_URL=http://elastic:admin1234@elasticsearch_container:9200
-      - ELASTIC_APM_SERVER_URL=http://localhost:8200
-      - ELASTIC_APM_SECRET_TOKEN=
+      - NOTIFICATION_ENABLE_APM=${NOTIFICATION_ENABLE_APM}
+      - NOTIFICATION_NODE_ENV=${NOTIFICATION_NODE_ENV}
+      - NOTIFICATION_CLIENT_URL=${NOTIFICATION_CLIENT_URL}
+      - NOTIFICATION_RABBITMQ_ENDPOINT=${NOTIFICATION_RABBITMQ_ENDPOINT}
+      - NOTIFICATION_ELASTIC_SEARCH_URL=${NOTIFICATION_ELASTIC_SEARCH_URL}
+      - NOTIFICATION_ELASTIC_APM_SERVER_URL=${NOTIFICATION_ELASTIC_APM_SERVER_URL}
+      - NOTIFICATION_ELASTIC_APM_SECRET_TOKEN=${NOTIFICATION_ELASTIC_APM_SECRET_TOKEN}
+      - NOTIFICATION_SMTP_HOST=${NOTIFICATION_SMTP_HOST}
+      - NOTIFICATION_SMTP_PORT=${NOTIFICATION_SMTP_PORT}
+      - NOTIFICATION_SENDER_EMAIL=${NOTIFICATION_SENDER_EMAIL}
+      - NOTIFICATION_SENDER_EMAIL_PASSWORD=${NOTIFICATION_SENDER_EMAIL_PASSWORD}
     depends_on:
       - elasticsearch
       - rabbitmq
