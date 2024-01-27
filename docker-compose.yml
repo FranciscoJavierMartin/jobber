@@ -58,18 +58,25 @@ services:
       - '5672:5672'
       # Management UI
       - '15672:15672'
+    networks:
+      - elastic
   elasticsearch:
     container_name: elasticsearch_container
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.3
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
     restart: always
     environment:
       ES_JAVA_OPTS: -Xmx1g -Xms1g
       bootstrap.memory_lock: 'true'
       discovery.type: single-node
-      xpack.security.enabled: 'false'
+      network.host: 0.0.0.0
+      transport.host: 127.0.0.1
+      http.host: 0.0.0.0
+      xpack.security.enabled: 'true'
       xpack.security.authc.api_key.enabled: 'true'
       xpack.monitoring.collection.enabled: 'true'
       xpack.security.enrollment.enabled: 'true'
+      xpack.security.authc.token.enabled: 'true'
+      ELASTIC_PASSWORD: admin1234
     ports:
       - 9300:9300
       - 9200:9200
@@ -77,13 +84,16 @@ services:
       - ./docker-volumes/elasticsearch-data:/usr/share/elasticsearch/data
     networks:
       - elastic
-
   kibana:
     container_name: kibana_container
-    image: docker.elastic.co/kibana/kibana:8.11.3
+    image: docker.elastic.co/kibana/kibana:8.12.0
     restart: always
     environment:
       - ELASTICSEARCH_HOSTS=["http://elasticsearch_container:9200"]
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=kibana
+      - ELASTICSEARCH_SERVICEACCOUNT_TOKEN=AAEAAWVsYXN0aWMva2liYW5hL2pvYmJlci1raWJhbmE6OTQ4VGVxZU1UQVN5eUlPX3RDU2Y0UQ
+      - XPACK_FLEET_AGENTS_ELASTICSEARCH_HOSTS=["http://elasticsearch_container:9200"]
     ports:
       - 5601:5601
     networks:
@@ -92,7 +102,37 @@ services:
       - ./kibana.yml/:/usr/share/kibana/config/kibana.yml:ro
     depends_on:
       - elasticsearch
-
+  notifications:
+    container_name: notification_container
+    build:
+      context: ./server/jobber-notification
+      dockerfile: Dockerfile.dev
+      args:
+        - NPM_TOKEN=${NPM_TOKEN}
+    env_file:
+      - ./server/jobber-notification/.env
+    restart: always
+    ports:
+      - 4001:4001
+    environment:
+      - NOTIFICATION_ENABLE_APM=${NOTIFICATION_ENABLE_APM}
+      - NOTIFICATION_NODE_ENV=${NOTIFICATION_NODE_ENV}
+      - NOTIFICATION_CLIENT_URL=${NOTIFICATION_CLIENT_URL}
+      - NOTIFICATION_RABBITMQ_ENDPOINT=${NOTIFICATION_RABBITMQ_ENDPOINT}
+      - NOTIFICATION_ELASTIC_SEARCH_URL=${NOTIFICATION_ELASTIC_SEARCH_URL}
+      - NOTIFICATION_ELASTIC_APM_SERVER_URL=${NOTIFICATION_ELASTIC_APM_SERVER_URL}
+      - NOTIFICATION_ELASTIC_APM_SECRET_TOKEN=${NOTIFICATION_ELASTIC_APM_SECRET_TOKEN}
+      - NOTIFICATION_SMTP_HOST=${NOTIFICATION_SMTP_HOST}
+      - NOTIFICATION_SMTP_PORT=${NOTIFICATION_SMTP_PORT}
+      - NOTIFICATION_SENDER_EMAIL=${NOTIFICATION_SENDER_EMAIL}
+      - NOTIFICATION_SENDER_EMAIL_PASSWORD=${NOTIFICATION_SENDER_EMAIL_PASSWORD}
+    depends_on:
+      - elasticsearch
+      - rabbitmq
+    networks:
+      - elastic
+    volumes:
+      - ./server/jobber-notification/:/app
 networks:
   elastic:
     name: elastic
