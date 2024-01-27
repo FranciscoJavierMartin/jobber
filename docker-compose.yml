@@ -109,12 +109,11 @@ services:
       dockerfile: Dockerfile.dev
       args:
         - NPM_TOKEN=${NPM_TOKEN}
+    env_file:
+      - ./server/jobber-notification/.env
     restart: always
     ports:
       - 4001:4001
-    env_file:
-      - ./server/jobber-notification/.env
-    # Check what is used
     environment:
       - NOTIFICATION_ENABLE_APM=${NOTIFICATION_ENABLE_APM}
       - NOTIFICATION_NODE_ENV=${NOTIFICATION_NODE_ENV}
@@ -132,6 +131,8 @@ services:
       - rabbitmq
     networks:
       - elastic
+    volumes:
+      - ./server/jobber-notification/:/app
 networks:
   elastic:
     name: elastic
